@@ -6,11 +6,19 @@ module SortableColumns
     if params[:sort_by] && params[:order]
       validate_params(sortable)
       store_sort(sortable)
-      return "#{function}(#{params.delete(:sort_by)}) #{params.delete(:order)}"
+      if sortable.columns_hash[params[:sort_by]].type == :string
+        return "#{function}(#{params.delete(:sort_by)}) #{params.delete(:order)}"
+      else
+        return "#{params.delete(:sort_by)} #{params.delete(:order)}"
+      end
     else
       if session[:sortable_columns] && session[:sortable_columns][sortable.to_s.downcase.to_sym]
         column = session[:sortable_columns][sortable.to_s.downcase.to_sym].keys.first
-        return "#{function}(#{column.to_s}) #{session[:sortable_columns][sortable.to_s.downcase.to_sym][column.to_sym]}"
+        if sortable.columns_hash[column.to_s].type == :string
+          return "#{function}(#{column.to_s}) #{session[:sortable_columns][sortable.to_s.downcase.to_sym][column.to_sym]}"
+        else
+          return "#{column.to_s} #{session[:sortable_columns][sortable.to_s.downcase.to_sym][column.to_sym]}"
+        end
       else
         return options[:default]
       end
